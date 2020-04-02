@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.exception.GameException;
 import com.mygdx.game.math.Rect;
+import com.mygdx.game.sprites.Ship;
 
 
 public class Sprite extends Rect {
@@ -40,6 +41,10 @@ public class Sprite extends Rect {
                 scale, scale,
                 angle
         );
+    }
+
+    public Sprite(TextureRegion region, int rows, int cols, int frames) {
+        this.regions = Ship.split(region, rows, cols, frames);
     }
 
     public void resize(Rect worldBounds) {
