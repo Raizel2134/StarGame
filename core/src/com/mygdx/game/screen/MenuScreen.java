@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
-
+import com.mygdx.game.sound.MainSound;
 import com.mygdx.game.base.BaseScreen;
 import com.mygdx.game.exception.GameException;
 import com.mygdx.game.math.Rect;
@@ -29,6 +29,8 @@ public class MenuScreen extends BaseScreen {
     private Star[] stars;
     private ButtonExit buttonExit;
     private ButtonPlay buttonPlay;
+    private MainSound mainSound;
+    private String mainMusic;
 
     public MenuScreen(Game game) {
         this.game = game;
@@ -39,6 +41,7 @@ public class MenuScreen extends BaseScreen {
         super.show();
         bg = new Texture("textures/bg.jpg");
         atlas = new TextureAtlas(Gdx.files.internal("textures/menuAtlas.tpack"));
+        mainMusic = "sounds/main.mp3";
         initSprites();
     }
 
@@ -53,6 +56,7 @@ public class MenuScreen extends BaseScreen {
         batch.dispose();
         bg.dispose();
         atlas.dispose();
+        mainSound.dispose();
         super.dispose();
     }
 
@@ -89,6 +93,7 @@ public class MenuScreen extends BaseScreen {
             }
             buttonExit = new ButtonExit(atlas);
             buttonPlay = new ButtonPlay(atlas, game);
+            mainSound = new MainSound(mainMusic);
         } catch (GameException e) {
             throw new RuntimeException(e);
         }
