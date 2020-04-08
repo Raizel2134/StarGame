@@ -5,95 +5,162 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.base.Sprite;
+import com.mygdx.game.exception.GameException;
 import com.mygdx.game.math.Rect;
+import com.mygdx.game.pool.BulletPool;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Ship extends Sprite {
-    private static final float SIZE = 0.15f;
-    private static final float BOTTOM_FIELD = 0.05f;
-    private final Vector2 directionMove = new Vector2(0.5f, 0.0f);
-    private final Vector2 direction = new Vector2();
+
+    private static final float SHIP_HEIGHT = 0.15f;
+    private static final float BOTTOM_MARGIN = 0.05f;
+    private static final int INVALID_POINTER = -1;
+
     private Rect worldBounds;
+    private BulletPool bulletPool;
+    private TextureRegion bulletRegion;
+    private Vector2 bulletV;
 
+    private final Vector2 v0;
+    private final Vector2 v;
 
-    public Ship(TextureAtlas atlas) {
+    private boolean pressedLeft;
+    private boolean pressedRight;
+
+    private int leftPointer = INVALID_POINTER;
+    private int rightPointer = INVALID_POINTER;
+
+    public Ship(TextureAtlas atlas, BulletPool bulletPool) throws GameException {
         super(atlas.findRegion("main_ship"), 1, 2, 2);
-        setHeightProportion(SIZE);
-    }
-
-    public static TextureRegion[] split(TextureRegion region, int rows, int cols, int frames) {
-        TextureRegion[] regions = new TextureRegion[frames];
-        int tileWidth = region.getRegionWidth() / cols;
-        int tileHeight = region.getRegionHeight() / rows;
-
-        int frame = 0;
-        for (int i = 0; i < rows; i++) {
-            for (int k = 0; k < cols; k++) {
-                regions[frame] = new TextureRegion(region, tileWidth * k, tileHeight * i, tileWidth, tileHeight);
-                if(frame == frames - 1) return regions;
-                frame++;
-            }
-        }
-        return regions;
+        this.bulletPool = bulletPool;
+        bulletRegion = atlas.findRegion("bulletMainShip");
+        bulletV = new Vector2(0, 0.5f);
+        v0 = new Vector2(0.5f, 0);
+        v = new Vector2();
     }
 
     @Override
     public void resize(Rect worldBounds) {
         this.worldBounds = worldBounds;
-        setBottom(worldBounds.getBottom() + BOTTOM_FIELD);
+        setHeightProportion(SHIP_HEIGHT);
+        setBottom(worldBounds.getBottom() + BOTTOM_MARGIN);
     }
 
     @Override
-    public void update(float deltaTime) {
-        pos.mulAdd(direction, deltaTime);
-        if (getRight() > worldBounds.getRight()) {
-            setRight(worldBounds.getRight());
-            stop();
-        }
+    public void update(float delta) {
+        pos.mulAdd(v, delta);
         if (getLeft() < worldBounds.getLeft()) {
             setLeft(worldBounds.getLeft());
             stop();
         }
+        if (getRight() > worldBounds.getRight()) {
+            setRight(worldBounds.getRight());
+            stop();
+        }
     }
 
-    public void keyDown(int keycode) {
+    @Override
+    public boolean touchDown(Vector2 touch, int pointer, int button) {
+        if (touch.x < worldBounds.pos.x) {
+            if (leftPointer != INVALID_POINTER) {
+                return false;
+            }
+            leftPointer = pointer;
+            moveLeft();
+        } else {
+            if (rightPointer != INVALID_POINTER) {
+                return false;
+            }
+            rightPointer = pointer;
+            moveRight();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(Vector2 touch, int pointer, int button) {
+        if (pointer == leftPointer) {
+            leftPointer = INVALID_POINTER;
+            if (rightPointer != INVALID_POINTER) {
+                moveRight();
+            } else {
+                stop();
+            }
+        } else if (pointer == rightPointer) {
+            rightPointer = INVALID_POINTER;
+            if (leftPointer != INVALID_POINTER) {
+                moveLeft();
+            } else {
+                stop();
+            }
+        }
+        return false;
+    }
+
+    public boolean keyDown(int keycode) {
         switch (keycode) {
             case Input.Keys.A:
             case Input.Keys.LEFT:
+                pressedLeft = true;
                 moveLeft();
                 break;
             case Input.Keys.D:
             case Input.Keys.RIGHT:
+                pressedRight = true;
                 moveRight();
                 break;
-            case Input.Keys.UP:
-                frame = 1;
-                break;
         }
+        return false;
     }
 
-    public void keyUp(int keycode) {
+    public boolean keyUp(int keycode) {
         switch (keycode) {
             case Input.Keys.A:
             case Input.Keys.LEFT:
+                pressedLeft = false;
+                if (pressedRight) {
+                    moveRight();
+                } else {
+                    stop();
+                }
+                break;
             case Input.Keys.D:
             case Input.Keys.RIGHT:
-                stop();
-                break;
-            case Input.Keys.UP:
-                frame = 0;
+                pressedRight = false;
+                if (pressedLeft) {
+                    moveLeft();
+                } else {
+                    stop();
+                }
                 break;
         }
+        return false;
     }
 
+    private void shoot() {
+        Bullet bullet = bulletPool.obtain();
+        bullet.set(this, bulletRegion, pos, bulletV, 0.01f, worldBounds, 1);
+    }
+
+    //Таймер и задача таймера осуществляющая выстрел.
+    public Timer timer = new Timer();
+    public TimerTask taskShoot = new TimerTask(){
+        @Override
+        public void run() {
+            shoot();
+        }
+    };
+
     private void moveRight() {
-        direction.set(directionMove);
+        v.set(v0);
     }
 
     private void moveLeft() {
-        direction.set(directionMove).rotate(180);
+        v.set(v0).rotate(180);
     }
 
     private void stop() {
-        direction.setZero();
+        v.setZero();
     }
 }
