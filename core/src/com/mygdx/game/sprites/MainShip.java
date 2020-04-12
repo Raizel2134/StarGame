@@ -8,14 +8,13 @@ import com.mygdx.game.base.Ship;
 import com.mygdx.game.exception.GameException;
 import com.mygdx.game.math.Rect;
 import com.mygdx.game.pool.BulletPool;
+import com.mygdx.game.pool.ExplosionPool;
 
 public class MainShip extends Ship {
+    private static final int HP = 1;
     private static final float SHIP_HEIGHT = 0.15f;
     private static final float BOTTOM_MARGIN = 0.05f;
     private static final int INVALID_POINTER = -1;
-
-    //Флаг нашего корабля
-    private static final int MAIN_SHIP = 0;
 
     private boolean pressedLeft;
     private boolean pressedRight;
@@ -23,18 +22,32 @@ public class MainShip extends Ship {
     private int leftPointer = INVALID_POINTER;
     private int rightPointer = INVALID_POINTER;
 
-    public MainShip(TextureAtlas atlas, BulletPool bulletPool) throws GameException {
+    public MainShip(TextureAtlas atlas, BulletPool bulletPool, ExplosionPool explosionPool) throws GameException {
         super(atlas.findRegion("main_ship"), 1, 2, 2);
         this.bulletPool = bulletPool;
+        this.explosionPool = explosionPool;
+        shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/laser.wav"));
         bulletRegion = atlas.findRegion("bulletMainShip");
         bulletV = new Vector2(0, 0.5f);
+        bulletPos = new Vector2();
         v0 = new Vector2(0.5f, 0);
         v = new Vector2();
         reloadInterval = 0.2f;
         reloadTimer = reloadInterval;
         bulletHeight = 0.01f;
         damage = 1;
-        hp = 100;
+        hp = HP;
+    }
+    //Обнуление всех настроек корабля.
+    public void newGame() {
+        this.hp = HP;
+        stop();
+        pressedLeft = false;
+        pressedRight = false;
+        leftPointer = INVALID_POINTER;
+        rightPointer = INVALID_POINTER;
+        this.pos.x = worldBounds.pos.x;
+        flushDestroy();
     }
 
     @Override
@@ -47,11 +60,8 @@ public class MainShip extends Ship {
     @Override
     public void update(float delta) {
         super.update(delta);
-        reloadTimer += delta;
-        if (reloadTimer >= reloadInterval) {
-            reloadTimer = 0f;
-            shoot();
-        }
+        bulletPos.set(pos.x, pos.y + getHalfHeight());
+        autoShoot(delta);
         if (getLeft() < worldBounds.getLeft()) {
             setLeft(worldBounds.getLeft());
             stop();
@@ -140,6 +150,13 @@ public class MainShip extends Ship {
         return false;
     }
 
+    public boolean isBulletCollision(Rect bullet) {
+        return !(bullet.getRight() < getLeft()
+                || bullet.getLeft() > getRight()
+                || bullet.getBottom() > pos.y
+                || bullet.getTop() < getBottom());
+    }
+
     private void moveRight() {
         v.set(v0);
     }
@@ -151,19 +168,4 @@ public class MainShip extends Ship {
     private void stop() {
         v.setZero();
     }
-
-    private void shoot() {
-        Bullet bullet = bulletPool.obtain();
-        bullet.set(this, bulletRegion, pos.x, pos.y + halfHeight, bulletV, bulletHeight, worldBounds, damage, MAIN_SHIP);
-        shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/laser.wav"));
-        shootSound.play();
-    }
-
-    //Добавил методы damageHP и getHP, что бы наносить урон и проверять текущее ХП.
-    public void damageHP(int damage){
-        this.hp -= damage;
-        System.out.println("HP = " + this.hp);
-    }
-
-    public int getHP() { return this.hp; }
 }
