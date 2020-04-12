@@ -1,29 +1,21 @@
 package com.mygdx.game.sprites;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.base.Sprite;
+import com.mygdx.game.base.Ship;
 import com.mygdx.game.exception.GameException;
 import com.mygdx.game.math.Rect;
 import com.mygdx.game.pool.BulletPool;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class Ship extends Sprite {
-
+public class MainShip extends Ship {
     private static final float SHIP_HEIGHT = 0.15f;
     private static final float BOTTOM_MARGIN = 0.05f;
     private static final int INVALID_POINTER = -1;
 
-    private Rect worldBounds;
-    private BulletPool bulletPool;
-    private TextureRegion bulletRegion;
-    private Vector2 bulletV;
-
-    private final Vector2 v0;
-    private final Vector2 v;
+    //Флаг нашего корабля
+    private static final int MAIN_SHIP = 0;
 
     private boolean pressedLeft;
     private boolean pressedRight;
@@ -31,13 +23,18 @@ public class Ship extends Sprite {
     private int leftPointer = INVALID_POINTER;
     private int rightPointer = INVALID_POINTER;
 
-    public Ship(TextureAtlas atlas, BulletPool bulletPool) throws GameException {
+    public MainShip(TextureAtlas atlas, BulletPool bulletPool) throws GameException {
         super(atlas.findRegion("main_ship"), 1, 2, 2);
         this.bulletPool = bulletPool;
         bulletRegion = atlas.findRegion("bulletMainShip");
         bulletV = new Vector2(0, 0.5f);
         v0 = new Vector2(0.5f, 0);
         v = new Vector2();
+        reloadInterval = 0.2f;
+        reloadTimer = reloadInterval;
+        bulletHeight = 0.01f;
+        damage = 1;
+        hp = 100;
     }
 
     @Override
@@ -49,7 +46,12 @@ public class Ship extends Sprite {
 
     @Override
     public void update(float delta) {
-        pos.mulAdd(v, delta);
+        super.update(delta);
+        reloadTimer += delta;
+        if (reloadTimer >= reloadInterval) {
+            reloadTimer = 0f;
+            shoot();
+        }
         if (getLeft() < worldBounds.getLeft()) {
             setLeft(worldBounds.getLeft());
             stop();
@@ -138,20 +140,6 @@ public class Ship extends Sprite {
         return false;
     }
 
-    private void shoot() {
-        Bullet bullet = bulletPool.obtain();
-        bullet.set(this, bulletRegion, pos, bulletV, 0.01f, worldBounds, 1);
-    }
-
-    //Таймер и задача таймера осуществляющая выстрел.
-    public Timer timer = new Timer();
-    public TimerTask taskShoot = new TimerTask(){
-        @Override
-        public void run() {
-            shoot();
-        }
-    };
-
     private void moveRight() {
         v.set(v0);
     }
@@ -163,4 +151,19 @@ public class Ship extends Sprite {
     private void stop() {
         v.setZero();
     }
+
+    private void shoot() {
+        Bullet bullet = bulletPool.obtain();
+        bullet.set(this, bulletRegion, pos.x, pos.y + halfHeight, bulletV, bulletHeight, worldBounds, damage, MAIN_SHIP);
+        shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/laser.wav"));
+        shootSound.play();
+    }
+
+    //Добавил методы damageHP и getHP, что бы наносить урон и проверять текущее ХП.
+    public void damageHP(int damage){
+        this.hp -= damage;
+        System.out.println("HP = " + this.hp);
+    }
+
+    public int getHP() { return this.hp; }
 }
