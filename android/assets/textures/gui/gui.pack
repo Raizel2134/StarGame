@@ -1,0 +1,36 @@
+
+gui.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+cancel
+  rotate: false
+  xy: 1, 1
+  size: 640, 640
+  orig: 640, 640
+  offset: 0, 0
+  index: -1
+
+gui2.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+pause-button
+  rotate: false
+  xy: 1, 1
+  size: 640, 640
+  orig: 640, 640
+  offset: 0, 0
+  index: -1
+
+gui3.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+play-button
+  rotate: false
+  xy: 1, 1
+  size: 640, 640
+  orig: 640, 640
+  offset: 0, 0
+  index: -1

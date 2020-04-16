@@ -11,7 +11,7 @@ import com.mygdx.game.pool.BulletPool;
 import com.mygdx.game.pool.ExplosionPool;
 
 public class MainShip extends Ship {
-    private static final int HP = 1;
+    private static final int HP = 100;
     private static final float SHIP_HEIGHT = 0.15f;
     private static final float BOTTOM_MARGIN = 0.05f;
     private static final int INVALID_POINTER = -1;
@@ -22,6 +22,7 @@ public class MainShip extends Ship {
     private int leftPointer = INVALID_POINTER;
     private int rightPointer = INVALID_POINTER;
 
+    //Конструктор класса.
     public MainShip(TextureAtlas atlas, BulletPool bulletPool, ExplosionPool explosionPool) throws GameException {
         super(atlas.findRegion("main_ship"), 1, 2, 2);
         this.bulletPool = bulletPool;
@@ -38,7 +39,8 @@ public class MainShip extends Ship {
         damage = 1;
         hp = HP;
     }
-    //Обнуление всех настроек корабля.
+
+    //Сброс настроек, для начала новой игры.
     public void newGame() {
         this.hp = HP;
         stop();
@@ -50,6 +52,7 @@ public class MainShip extends Ship {
         flushDestroy();
     }
 
+    //Скалирование размера, пропорционально мировым координатам.
     @Override
     public void resize(Rect worldBounds) {
         this.worldBounds = worldBounds;
@@ -57,6 +60,8 @@ public class MainShip extends Ship {
         setBottom(worldBounds.getBottom() + BOTTOM_MARGIN);
     }
 
+    //Обновление с проверкой выхода за границы экрана.
+    //И совершение выстрела с установкой позиции пули.
     @Override
     public void update(float delta) {
         super.update(delta);
@@ -72,6 +77,7 @@ public class MainShip extends Ship {
         }
     }
 
+    //Перемещение при касании пальцем\нажатием мыши по игровому пространству.
     @Override
     public boolean touchDown(Vector2 touch, int pointer, int button) {
         if (touch.x < worldBounds.pos.x) {
@@ -90,26 +96,35 @@ public class MainShip extends Ship {
         return false;
     }
 
+    //Остановка перемещения.
     @Override
     public boolean touchUp(Vector2 touch, int pointer, int button) {
-        if (pointer == leftPointer) {
-            leftPointer = INVALID_POINTER;
-            if (rightPointer != INVALID_POINTER) {
-                moveRight();
-            } else {
-                stop();
-            }
-        } else if (pointer == rightPointer) {
-            rightPointer = INVALID_POINTER;
-            if (leftPointer != INVALID_POINTER) {
-                moveLeft();
-            } else {
-                stop();
-            }
-        }
+         if (pointer == leftPointer) {
+             leftPointer = INVALID_POINTER;
+             if (rightPointer != INVALID_POINTER) {
+                 moveRight();
+             } else {
+                 stop();
+             }
+         } else if (pointer == rightPointer) {
+             rightPointer = INVALID_POINTER;
+             if (leftPointer != INVALID_POINTER) {
+                 moveLeft();
+             } else {
+                 stop();
+             }
+         }
         return false;
     }
 
+    //Следование за пальцем\курсором.
+    @Override
+    public boolean touchDragged(Vector2 touch, int pointer) {
+        pos.set(touch.x, pos.y);
+        return false;
+    }
+
+    //Начало движения, при нажатии клавиши.
     public boolean keyDown(int keycode) {
         switch (keycode) {
             case Input.Keys.A:
@@ -126,6 +141,7 @@ public class MainShip extends Ship {
         return false;
     }
 
+    //Остановка движения, при отпускании клавиши.
     public boolean keyUp(int keycode) {
         switch (keycode) {
             case Input.Keys.A:
@@ -150,6 +166,7 @@ public class MainShip extends Ship {
         return false;
     }
 
+    //Проверка коллизий.
     public boolean isBulletCollision(Rect bullet) {
         return !(bullet.getRight() < getLeft()
                 || bullet.getLeft() > getRight()
@@ -157,15 +174,12 @@ public class MainShip extends Ship {
                 || bullet.getTop() < getBottom());
     }
 
-    private void moveRight() {
-        v.set(v0);
-    }
+    //Движение вправо.
+    private void moveRight() { v.set(v0); }
 
-    private void moveLeft() {
-        v.set(v0).rotate(180);
-    }
+    //Движение влево.
+    private void moveLeft() { v.set(v0).rotate(180); }
 
-    private void stop() {
-        v.setZero();
-    }
+    //Остановка.
+    private void stop() { v.setZero(); }
 }

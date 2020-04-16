@@ -16,9 +16,7 @@ import com.mygdx.game.sprites.ButtonPlay;
 import com.mygdx.game.sprites.Star;
 
 public class MenuScreen extends BaseScreen {
-
-    private static final int STAR_COUNT = 128;
-
+    private static final int STAR_COUNT = 64;
     private final Game game;
 
     private Texture bg;
@@ -61,6 +59,7 @@ public class MenuScreen extends BaseScreen {
         super.dispose();
     }
 
+    //Скалирование размера, пропорционально мировым координатам.
     @Override
     public void resize(Rect worldBounds) {
         background.resize(worldBounds);
@@ -71,6 +70,7 @@ public class MenuScreen extends BaseScreen {
         buttonPlay.resize(worldBounds);
     }
 
+    //Действия при нажатии\касании на кнопки.
     @Override
     public boolean touchDown(Vector2 touch, int pointer, int button) {
         buttonExit.touchDown(touch, pointer, button);
@@ -78,6 +78,7 @@ public class MenuScreen extends BaseScreen {
         return false;
     }
 
+    //Действия при отпускании кнопки.
     @Override
     public boolean touchUp(Vector2 touch, int pointer, int button) {
         buttonExit.touchUp(touch, pointer, button);
@@ -85,6 +86,7 @@ public class MenuScreen extends BaseScreen {
         return false;
     }
 
+    //Инициализация объектов.
     private void initSprites() {
         try {
             background = new Background(bg);
@@ -105,6 +107,7 @@ public class MenuScreen extends BaseScreen {
         }
     }
 
+    //Отрисовка объектов.
     private void draw() {
         Gdx.gl.glClearColor(0.5f, 0.7f, 0.8f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);

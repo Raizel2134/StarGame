@@ -7,7 +7,6 @@ import com.mygdx.game.base.Sprite;
 import com.mygdx.game.exception.GameException;
 
 public class Explosion extends Sprite {
-
     private static final float ANIMATE_INTERVAL = 0.017f;
 
     private float animateTimer;

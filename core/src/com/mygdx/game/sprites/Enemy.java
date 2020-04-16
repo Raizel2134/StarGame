@@ -11,6 +11,7 @@ import com.mygdx.game.pool.ExplosionPool;
 public class Enemy extends Ship {
     private final Vector2 descentV;
 
+    //Конструктор класса.
     public Enemy(BulletPool bulletPool, ExplosionPool explosionPool, Rect worldBounds) {
         this.bulletPool = bulletPool;
         this.explosionPool = explosionPool;
@@ -23,6 +24,8 @@ public class Enemy extends Ship {
         descentV = new Vector2(0, -0.3f);
     }
 
+    //Обновление с проверкой выхода за границы экрана.
+    //И совершение выстрела с установкой позиции пули.
     @Override
     public void update(float delta) {
         super.update(delta);
@@ -60,6 +63,7 @@ public class Enemy extends Ship {
         setHeightProportion(height);
     }
 
+    //Проверка коллизиий
     public boolean isBulletCollision(Rect bullet) {
         return !(bullet.getRight() < getLeft()
                 || bullet.getLeft() > getRight()

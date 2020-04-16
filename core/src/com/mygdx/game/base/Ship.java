@@ -12,8 +12,8 @@ import com.mygdx.game.sprites.Bullet;
 import com.mygdx.game.sprites.Explosion;
 
 public abstract class Ship extends Sprite {
-
     private static final float DAMAGE_ANIMATE_INTERVAL = 0.1f;
+    private static final float DELTA_COEFF = 1.1f;
     protected Rect worldBounds;
     protected BulletPool bulletPool;
     protected ExplosionPool explosionPool;
@@ -31,16 +31,23 @@ public abstract class Ship extends Sprite {
     protected float reloadInterval;
     protected float reloadTimer;
     protected float damageAnimateTimer = DAMAGE_ANIMATE_INTERVAL;
+    private float deltaSave;
 
-    public Ship() {
-    }
+    public Ship() { }
 
     public Ship(TextureRegion region, int rows, int cols, int frames) throws GameException {
         super(region, rows, cols, frames);
     }
 
+    //Движение, получение урона, остановка времени при сворачивании\паузе.
     @Override
     public void update(float delta) {
+        if(deltaSave == 0f){
+            deltaSave = delta;
+        }
+        if(delta > deltaSave * DELTA_COEFF){
+            delta = deltaSave;
+        }
         pos.mulAdd(v, delta);
         damageAnimateTimer += delta;
         if (damageAnimateTimer >= DAMAGE_ANIMATE_INTERVAL) {
@@ -54,6 +61,7 @@ public abstract class Ship extends Sprite {
         boom();
     }
 
+    //Нанесение урона.
     public void damage(int damage) {
         damageAnimateTimer = 0f;
         frame = 1;
@@ -64,10 +72,11 @@ public abstract class Ship extends Sprite {
         }
     }
 
-    public int getDamage() {
-        return damage;
-    }
+    public int getDamage() { return damage; }
 
+    public int getHp(){return this.hp;}
+
+    //Авто выстрел
     protected void autoShoot(float delta) {
         reloadTimer += delta;
         if (reloadTimer >= reloadInterval) {
@@ -76,12 +85,14 @@ public abstract class Ship extends Sprite {
         }
     }
 
+    //Выстрел.
     private void shoot() {
         Bullet bullet = bulletPool.obtain();
         bullet.set(this, bulletRegion, bulletPos, bulletV, bulletHeight, worldBounds, damage);
         shootSound.play();
     }
 
+    //Взрыв корабля.
     private void boom() {
         Explosion explosion = explosionPool.obtain();
         explosion.set(pos, getHeight());

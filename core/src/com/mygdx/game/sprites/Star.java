@@ -14,9 +14,10 @@ public class Star extends Sprite {
     private Vector2 v;
     private Rect worldBounds;
 
-    private float animateInterval = 0.2f;
+    private float animateInterval = 0.001f;
     private float animateTimer;
 
+    //Конструктор.
     public Star(TextureAtlas atlas) throws GameException {
         super(atlas.findRegion("star"));
         float vx = Rnd.nextFloat(-0.005f, 0.005f);
@@ -25,6 +26,7 @@ public class Star extends Sprite {
         animateTimer = Rnd.nextFloat(0, 0.5f);
     }
 
+    //Скалирование размера, пропорционально мировым координатам.
     @Override
     public void resize(Rect worldBounds) {
         this.worldBounds = worldBounds;
@@ -34,6 +36,7 @@ public class Star extends Sprite {
         this.pos.set(posX, posY);
     }
 
+    //Движение, мерцание, проверка на выход за границы.
     @Override
     public void update(float delta) {
         pos.mulAdd(v, delta);

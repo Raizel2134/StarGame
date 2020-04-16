@@ -5,25 +5,25 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.mygdx.game.base.ScaledButton;
 import com.mygdx.game.exception.GameException;
 import com.mygdx.game.math.Rect;
-import com.mygdx.game.screen.GameScreen;
+import com.mygdx.game.screen.MenuScreen;
 
-public class ButtonPlay extends ScaledButton {
+public class ButtonBack extends ScaledButton {
     private final Game game;
 
-    public ButtonPlay(TextureAtlas atlas, Game game) throws GameException {
-        super(atlas.findRegion("btPlay"));
+    public ButtonBack(TextureAtlas atlas, Game game) throws GameException {
+        super(atlas.findRegion("cancel"));
         this.game = game;
     }
 
     @Override
     public void resize(Rect worldBounds) {
-        setHeightProportion(0.20f);
-        setBottom(worldBounds.getBottom() + 0.45f);
+        setHeightProportion(0.05f);
+        setTop(worldBounds.getTop() - 0.07f);
+        setRight(worldBounds.getRight() - 0.01f);
     }
-
 
     @Override
     public void action() {
-        game.setScreen(new GameScreen(game));
+        game.setScreen(new MenuScreen(game));
     }
 }

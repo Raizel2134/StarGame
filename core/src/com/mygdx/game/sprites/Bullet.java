@@ -6,54 +6,48 @@ import com.mygdx.game.base.Sprite;
 import com.mygdx.game.math.Rect;
 
 public class Bullet extends Sprite {
+    private static final float DELTA_COEFF = 1.1f;
     private Rect worldBounds;
     private final Vector2 v = new Vector2();
     private int damage;
     private Object owner;
 
-    //Добавил флаг, дающий понять чей это выстрел
-    private int flagShip;
+    private float deltaSave;
 
     public Bullet() {
         regions = new TextureRegion[1];
     }
 
-    //Изменил сеттер, теперь передается позиция posX и posY в качестве начальных для пули.
-    //Раньше передавался вектор, но из-за этого пуля летела из центра корабля.
-    //Теперь на вход поступают координаты posX и posY, которые записываются в вектор пули
-    //Звук выстрела происходил при инициализации объекта корабля.
-    //Поэтому перенес метод shoot() в класс Enemy и MainShip.
     public void set(
             Object owner,
             TextureRegion region,
-            float posX,
-            float posY,
+            Vector2 posBullet,
             Vector2 v0,
             float height,
             Rect worldBounds,
-            int damage,
-            int flagShip
+            int damage
     ) {
        this.owner = owner;
        this.regions[0] = region;
-       this.pos.set(posX, posY);
+       this.pos.set(posBullet);
        this.v.set(v0);
        setHeightProportion(height);
        this.worldBounds = worldBounds;
        this.damage = damage;
-       this.flagShip = flagShip;
     }
 
     @Override
     public void update(float delta) {
+        if(deltaSave == 0f){
+            deltaSave = delta;
+        }
+        if(delta > deltaSave * DELTA_COEFF){
+            delta = deltaSave;
+        }
         pos.mulAdd(v, delta);
         if (isOutside(worldBounds)) {
             destroy();
         }
-    }
-
-    public void setPosition(Vector2 size){
-        this.pos.set(pos.x, pos.y + size.y);
     }
 
     public int getDamage() {
@@ -64,5 +58,4 @@ public class Bullet extends Sprite {
         return owner;
     }
 
-    public int getFlagShip(){return this.flagShip; }
 }
